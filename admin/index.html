@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Kelvin Scale - Admin</title>
+
+    <link rel="stylesheet" href="admin.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <header class="topbar">
+        <div>
+            <div class="brand">KELVIN SCALE</div>
+            <h1>Flavour Control</h1>
+            <p>Manage today's ice cream flavours</p>
+        </div>
+
+        <div class="stats">
+            <div class="stat">
+                <strong id="availableCount">0</strong>
+                <span>Available</span>
+            </div>
+
+            <div class="stat">
+                <strong id="totalCount">0</strong>
+                <span>Total</span>
+            </div>
+        </div>
+    </header>
+
+
+    <div class="control-bar">
+
+        <input
+            type="text"
+            id="searchInput"
+            placeholder="Search flavour..."
+        >
+
+        <button onclick="setFilter('all')">All</button>
+        <button onclick="setFilter('normal')">Normal</button>
+        <button onclick="setFilter('premium')">Premium</button>
+        <button onclick="setFilter('available')">Available</button>
+        <button onclick="setFilter('unavailable')">Not Available</button>
+
+    </div>
+
+
+    <div id="message"></div>
+
+
+    <section id="normalSection">
+
+        <div class="section-title">
+            <span>🍦</span>
+            <div>
+                <small>NORMAL</small>
+                <h2>Normal Ice Creams</h2>
+            </div>
+        </div>
+
+        <div id="normalList" class="flavour-list"></div>
+
+    </section>
+
+
+    <section id="premiumSection">
+
+        <div class="section-title">
+            <span>✨</span>
+            <div>
+                <small>PREMIUM</small>
+                <h2>Premium Ice Creams</h2>
+            </div>
+        </div>
+
+        <div id="premiumList" class="flavour-list"></div>
+
+    </section>
+
+</div>
+
+
+<script>
+
+const API_URL = "http://localhost:5000";
+
+let flavours = [];
+
+let currentFilter = "all";
+
+
+async function loadFlavours() {
+
+    try {
+
+        const response =
+            await fetch(`${API_URL}/api/flavours`);
+
+        if (!response.ok) {
+            throw new Error("Failed to load flavours");
+        }
+
+        flavours = await response.json();
+
+        updateStats();
+
+        displayFlavours();
+
+    } catch (error) {
+
+        document.getElementById("message").textContent =
+            "❌ Cannot connect to Kelvin Scale backend.";
+
+        console.error(error);
+    }
+}
+
+
+function updateStats() {
+
+    const available =
+        flavours.filter(item => item.available).length;
+
+    document.getElementById("availableCount").textContent =
+        available;
+
+    document.getElementById("totalCount").textContent =
+        flavours.length;
+}
+
+
+function setFilter(filter) {
+
+    currentFilter = filter;
+
+    displayFlavours();
+}
+
+
+function displayFlavours() {
+
+    const search =
+        document
+        .getElementById("searchInput")
+        .value
+        .toLowerCase()
+        .trim();
+
+
+    let filtered = flavours.filter(flavour => {
+
+        const matchesSearch =
+            flavour.name
+            .toLowerCase()
+            .includes(search);
+
+
+        if (!matchesSearch) {
+            return false;
+        }
+
+
+        if (currentFilter === "normal") {
+            return flavour.category === "normal";
+        }
+
+
+        if (currentFilter === "premium") {
+            return flavour.category === "premium";
+        }
+
+
+        if (currentFilter === "available") {
+            return flavour.available;
+        }
+
+
+        if (currentFilter === "unavailable") {
+            return !flavour.available;
+        }
+
+
+        return true;
+
+    });
+
+
+    const normalFlavours =
+        filtered.filter(
+            flavour => flavour.category === "normal"
+        );
+
+
+    const premiumFlavours =
+        filtered.filter(
+            flavour => flavour.category === "premium"
+        );
+
+
+    const normalList =
+        document.getElementById("normalList");
+
+    const premiumList =
+        document.getElementById("premiumList");
+
+
+    normalList.innerHTML = "";
+
+    premiumList.innerHTML = "";
+
+
+    normalFlavours.forEach(flavour => {
+
+        normalList.appendChild(
+            createFlavourCard(flavour)
+        );
+
+    });
+
+
+    premiumFlavours.forEach(flavour => {
+
+        premiumList.appendChild(
+            createFlavourCard(flavour)
+        );
+
+    });
+
+
+    document.getElementById("normalSection").style.display =
+        normalFlavours.length ? "block" : "none";
+
+
+    document.getElementById("premiumSection").style.display =
+        premiumFlavours.length ? "block" : "none";
+}
+
+
+function createFlavourCard(flavour) {
+
+    const card =
+        document.createElement("div");
+
+    card.className =
+        `flavour-card ${
+            flavour.available
+            ? "available"
+            : "unavailable"
+        }`;
+
+
+    card.innerHTML = `
+
+        <div class="flavour-info">
+
+            <span class="number">
+                ${flavour.id}
+            </span>
+
+            <div>
+
+                <h3>${flavour.name}</h3>
+
+                <span class="status ${
+                    flavour.available
+                    ? "status-on"
+                    : "status-off"
+                }">
+
+                    ${
+                        flavour.available
+                        ? "AVAILABLE"
+                        : "NOT AVAILABLE"
+                    }
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <button
+            class="toggle-btn ${
+                flavour.available
+                ? "turn-off"
+                : "turn-on"
+            }"
+            onclick="toggleFlavour(${flavour.id})"
+        >
+
+            ${
+                flavour.available
+                ? "Turn OFF"
+                : "Make Available"
+            }
+
+        </button>
+
+    `;
+
+    return card;
+}
+
+
+async function toggleFlavour(id) {
+
+    const flavour =
+        flavours.find(
+            item => item.id === id
+        );
+
+
+    if (!flavour) {
+        return;
+    }
+
+
+    const newStatus =
+        !flavour.available;
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/api/flavours/${id}`,
+                {
+                    method: "PUT",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        available: newStatus
+                    })
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            alert(
+                result.message ||
+                "Update failed"
+            );
+
+            return;
+        }
+
+
+        flavour.available =
+            result.flavour.available;
+
+
+        updateStats();
+
+        displayFlavours();
+
+
+    } catch (error) {
+
+        alert(
+            "Cannot connect to backend."
+        );
+
+        console.error(error);
+    }
+}
+
+
+document
+    .getElementById("searchInput")
+    .addEventListener(
+        "input",
+        displayFlavours
+    );
+
+
+loadFlavours();
+
+</script>
+
+</body>
+</html>
