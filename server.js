@@ -50,8 +50,8 @@ app.put("/api/flavours/:id", (req, res) => {
 
 app.use("/admin", express.static("admin"));
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+app.listen(PORT, "0.0.0.0", () => {
     console.log(`Kelvin Scale Backend running on port ${PORT}`);
 });
