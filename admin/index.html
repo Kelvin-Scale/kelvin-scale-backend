@@ -88,7 +88,7 @@
 
 <script>
 
-const API_URL = ""https://kelvin-scale-backend.onrender.com/api/flavours";
+const API_URL = "https://kelvin-scale-backend.onrender.com/api/flavours";
 
 let flavours = [];
 
@@ -99,8 +99,7 @@ async function loadFlavours() {
 
     try {
 
-        const response =
-            await fetch("https://kelvin-scale-backend.onrender.com/api/flavours")
+        const response = await fetch(API_URL);
 
         if (!response.ok) {
             throw new Error("Failed to load flavours");
@@ -323,60 +322,56 @@ async function toggleFlavour(id) {
 
 
     const newStatus =
-        !flavour.available;
+    !flavour.available;
 
 
-    try {
+try {
 
-        const response =
-            awaitfetch("/api/flavours/" + id,  
-                {
-                    method: "PUT",
+    const response =
+        await fetch(API_URL + "/" + id, {
+            method: "PUT",
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+            headers: {
+                "Content-Type": "application/json"
+            },
 
-                    body: JSON.stringify({
-                        available: newStatus
-                    })
-                }
-            );
+            body: JSON.stringify({
+                available: newStatus
+            })
+        });
 
 
-        const result =
-            await response.json();
+    const result =
+        await response.json();
 
 
-        if (!response.ok) {
-
-            alert(
-                result.message ||
-                "Update failed"
-            );
-
-            return;
-        }
-
-
-        flavour.available =
-            result.flavour.available;
-
-
-        updateStats();
-
-        displayFlavours();
-
-
-    } catch (error) {
+    if (!response.ok) {
 
         alert(
-            "Cannot connect to backend."
+            result.message ||
+            "Update failed"
         );
 
-        console.error(error);
+        return;
     }
+
+
+    flavour.available =
+        result.flavour.available;
+
+
+    updateStats();
+
+    displayFlavours();
+
+
+} catch (error) {
+
+    alert(
+        "Cannot connect to backend."
+    );
+
+    console.error(error);
 }
 
 
