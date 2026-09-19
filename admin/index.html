@@ -88,7 +88,7 @@
 
 <script>
 
-const API_URL = "http://localhost:5000";
+const API_URL = "";
 
 let flavours = [];
 
@@ -100,7 +100,7 @@ async function loadFlavours() {
     try {
 
         const response =
-            await fetch(`${API_URL}/api/flavours`);
+            await fetch("/api/flavours");
 
         if (!response.ok) {
             throw new Error("Failed to load flavours");
@@ -329,8 +329,7 @@ async function toggleFlavour(id) {
     try {
 
         const response =
-            await fetch(
-                `${API_URL}/api/flavours/${id}`,
+            awaitfetch("/api/flavours/" + id,  
                 {
                     method: "PUT",
 
