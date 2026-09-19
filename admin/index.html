@@ -88,7 +88,7 @@
 
 <script>
 
-const API_URL = "";
+const API_URL = ""https://kelvin-scale-backend.onrender.com/api/flavours";
 
 let flavours = [];
 
@@ -100,7 +100,7 @@ async function loadFlavours() {
     try {
 
         const response =
-            await fetch("/api/flavours");
+            await fetch("https://kelvin-scale-backend.onrender.com/api/flavours")
 
         if (!response.ok) {
             throw new Error("Failed to load flavours");
